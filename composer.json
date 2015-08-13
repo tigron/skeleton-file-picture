@@ -1,0 +1,23 @@
+{
+    "name": "tigron/skeleton-file-picture",
+    "description": "Tigron File utilities",
+    "type": "library",
+    "require-dev": {
+		"tigron/skeleton-file": "dev-master",
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tigron BVBA",
+            "email": "support@tigron.be"
+        }
+    ],
+    "support": {
+        "source": "https://github.com/tigron/skeleton-file-picture",
+        "issues": "https://github.com/tigron/skeleton-file-picture/issues"
+    },
+    "autoload": {
+        "psr-4": { "Skeleton\\File\\Picture": "lib/Skeleton/File/Picture" }
+    }
+
+}
