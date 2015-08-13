@@ -17,7 +17,7 @@
         "issues": "https://github.com/tigron/skeleton-file-picture/issues"
     },
     "autoload": {
-        "psr-4": { "Skeleton\\File\\Picture": "lib/Skeleton/File/Picture" }
+        "psr-4": { "Skeleton\\File\\Picture\\": "lib/Skeleton/File/Picture" }
     }
 
 }
