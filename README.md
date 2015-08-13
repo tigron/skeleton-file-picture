@@ -48,5 +48,5 @@ Initialize the picture library:
 
 Show a resized picture:
 
-	$picture = Picture::get_by_id(1);
-	$picture->resize($configuration_name);
+    $picture = Picture::get_by_id(1);
+    $picture->resize($configuration_name);
