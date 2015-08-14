@@ -19,7 +19,7 @@ class Config {
 	 * @access public
 	 * @var string $tmp_directory
 	 */
-	public static $tmp_dir = sys_get_temp_dir();
+	public static $tmp_dir = '/tmp';
 
 	/**
 	 * Resize configuration
