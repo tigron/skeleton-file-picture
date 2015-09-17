@@ -27,7 +27,7 @@ class Config {
 	 * @access private
 	 * @var array $resize_configuration
 	 */
-	public static $resize_configuration = [];
+	public static $resize_configurations = [];
 
 	/**
 	 * Add Resize Configuration
@@ -46,7 +46,7 @@ class Config {
 			'width' => $width,
 			'mode' => $mode
 		];
-		self::$resize_configuration[$name] = $configuration;
+		self::$resize_configurations[$name] = $configuration;
 	}
 
 	/**
@@ -57,8 +57,9 @@ class Config {
 	 * @return array $configuration
 	 */
 	public static function get_resize_configuration($name) {
-		if (!isset(self::$resize_configuration[$name])) {
+		if (!isset(self::$resize_configurations[$name])) {
 			throw new \Exception('Resize configuration ' . $name . ' not found');
 		}
+		return self::$resize_configurations[$name];
 	}
 }

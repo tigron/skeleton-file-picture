@@ -239,7 +239,7 @@ class Manipulation {
 	 */
 	public function resize($new_width = null, $new_height = null, $mode = 'auto') {
 		if (is_null($new_width) AND is_null($new_height)) {
-			throw new Exception('specifiy output dimensions');
+			throw new \Exception('specifiy output dimensions');
 		}
 
 		list($output_width, $output_height) = $this->get_output_dimensions($new_width, $new_height, $mode);

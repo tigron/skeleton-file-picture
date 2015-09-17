@@ -60,6 +60,8 @@ class Picture extends File {
 			parent::save(false);
 		}
 
+		$this->get_dimensions();
+
 		$db = Database::Get();
 		if (!isset($this->local_details['id']) OR $this->local_details['id'] === null) {
 			if (!isset($this->local_details['file_id']) OR $this->local_details['file_id'] == 0) {
@@ -73,11 +75,8 @@ class Picture extends File {
 			$db->update('picture', $this->local_details, $where);
 		}
 
+	
 		$this->get_details();
-
-		if (!isset($this->local_details['id']) OR $this->local_details['id'] === null) {
-			$this->get_dimensions();
-		}
 	}
 
 	/**
@@ -131,11 +130,13 @@ class Picture extends File {
 	 * @access private
 	 */
 	private function get_dimensions() {
+		if (isset($this->width) AND isset($this->height)) {
+			return;
+		}
 		$path = $this->get_path();
 		list($width, $height) = getimagesize($path);
 		$this->width = $width;
 		$this->height = $height;
-		$this->save();
 	}
 
 	/**
@@ -172,7 +173,7 @@ class Picture extends File {
 
 		$image = new Manipulation($this);
 		$image->resize($new_width, $new_height, $mode);
-		$image->output(Config::$tmp_dir . '/picture/' . $size . '/' . $this->unique_name);
+		$image->output(Config::$tmp_dir . '/picture/' . $size . '/' . $this->id);
 	}
 
 	/**
@@ -182,14 +183,14 @@ class Picture extends File {
 	 * @param string $size
 	 */
 	public function show($size = 'original') {
-		if(!file_exists(Config::$tmp_dir . '/picture/' . $size . '/' . $this->unique_name)) {
+		if(!file_exists(Config::$tmp_dir . '/picture/' . $size . '/' . $this->id)) {
 			$this->resize($size);
 		}
 
 		if ($size == 'original') {
 			$filename = $this->get_path();
 		} else {
-			$filename = Config::$tmp_dir . '/picture/' . $size . '/' . $this->unique_name;
+			$filename = Config::$tmp_dir . '/picture/' . $size . '/' . $this->id;
 		}
 
 		$gmt_mtime = gmdate('D, d M Y H:i:s', filemtime($filename)).' GMT';
@@ -219,8 +220,8 @@ class Picture extends File {
 	 */
 	public function delete() {
 		foreach (Config::$resize_configurations as $name => $configuration) {
-			if (file_exists(Config::$tmp_dir . '/picture/' . $name . '/' . $this->unique_name)) {
-				unlink(Config::$tmp_dir . '/picture/' . $name . '/' . $this->unique_name);
+			if (file_exists(Config::$tmp_dir . '/picture/' . $name . '/' . $this->id)) {
+				unlink(Config::$tmp_dir . '/picture/' . $name . '/' . $this->id);
 			}
 		}
 		$db = Database::Get();
