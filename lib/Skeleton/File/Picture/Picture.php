@@ -45,9 +45,9 @@ class Picture extends File {
 
 		if ($details === null) {
 			$this->save();
+		} else {
+			$this->local_details = $details;
 		}
-
-		$this->local_details = $details;
 	}
 
 	/**
@@ -75,7 +75,7 @@ class Picture extends File {
 			$db->update('picture', $this->local_details, $where);
 		}
 
-	
+
 		$this->get_details();
 	}
 
