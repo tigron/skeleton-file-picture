@@ -73,6 +73,7 @@ class Picture extends File {
 		} else {
 			$where = 'file_id=' . $db->quote($this->id);
 			$db->update('picture', $this->local_details, $where);
+			parent::save(true);
 		}
 
 
