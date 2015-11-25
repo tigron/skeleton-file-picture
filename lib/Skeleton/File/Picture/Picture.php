@@ -147,8 +147,12 @@ class Picture extends File {
 	 * @param string $size
 	 */
 	private function resize($size) {
-		if (!file_exists(Config::$tmp_dir . '/picture/' . $size)) {
-			mkdir(Config::$tmp_dir . '/picture/' . $size, 0755, true);
+		if (Config::$tmp_dir === null) {
+			throw new \Exception('Set a path first in "Config::$tmp_path"');
+		}
+
+		if (!file_exists(Config::$tmp_dir . $size . '/')) {
+			mkdir(Config::$tmp_dir . $size . '/', 0755, true);
 		}
 
 		if ($size == 'original') {
@@ -174,7 +178,7 @@ class Picture extends File {
 
 		$image = new Manipulation($this);
 		$image->resize($new_width, $new_height, $mode);
-		$image->output(Config::$tmp_dir . '/picture/' . $size . '/' . $this->id);
+		$image->output(Config::$tmp_dir . $size . '/' . $this->id);
 	}
 
 	/**
@@ -184,14 +188,14 @@ class Picture extends File {
 	 * @param string $size
 	 */
 	public function show($size = 'original') {
-		if(!file_exists(Config::$tmp_dir . '/picture/' . $size . '/' . $this->id)) {
+		if (!file_exists(Config::$tmp_dir . $size . '/' . $this->id)) {
 			$this->resize($size);
 		}
 
 		if ($size == 'original') {
 			$filename = $this->get_path();
 		} else {
-			$filename = Config::$tmp_dir . '/picture/' . $size . '/' . $this->id;
+			$filename = Config::$tmp_dir . $size . '/' . $this->id;
 		}
 
 		$gmt_mtime = gmdate('D, d M Y H:i:s', filemtime($filename)).' GMT';
@@ -221,8 +225,8 @@ class Picture extends File {
 	 */
 	public function delete() {
 		foreach (Config::$resize_configurations as $name => $configuration) {
-			if (file_exists(Config::$tmp_dir . '/picture/' . $name . '/' . $this->id)) {
-				unlink(Config::$tmp_dir . '/picture/' . $name . '/' . $this->id);
+			if (file_exists(Config::$tmp_dir . $name . '/' . $this->id)) {
+				unlink(Config::$tmp_dir . $name . '/' . $this->id);
 			}
 		}
 		$db = Database::Get();

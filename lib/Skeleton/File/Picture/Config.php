@@ -19,7 +19,7 @@ class Config {
 	 * @access public
 	 * @var string $tmp_directory
 	 */
-	public static $tmp_dir = '/tmp';
+	public static $tmp_dir = null;
 
 	/**
 	 * Resize configuration
