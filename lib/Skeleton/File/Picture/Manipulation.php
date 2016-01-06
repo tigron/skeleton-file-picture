@@ -73,6 +73,9 @@ class Manipulation {
 		$this->height = $picture->height;
 		$this->mime_type = $picture->mime_type;
 		$this->image = $this->open($picture->get_path());
+		if ($this->image === false) {
+			throw new \Exception('Is not a valid picture');
+		}
 	}
 
 	/**
