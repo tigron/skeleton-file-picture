@@ -151,15 +151,15 @@ class Picture extends File {
 			throw new \Exception('Set a path first in "Config::$tmp_path"');
 		}
 
+		if ($size == 'original') {
+			throw new \Exception('Do not try to resize with size "original".');
+		}
+
 		if (!file_exists(Config::$tmp_dir . $size . '/')) {
 			mkdir(Config::$tmp_dir . $size . '/', 0755, true);
 		}
 
-		if ($size == 'original') {
-			$resize_info = ['width' => $this->width, 'height' => $this->height, 'mode' => 'exact'];
-		} else {
-			$resize_info = Config::get_resize_configuration($size);
-		}
+		$resize_info = Config::get_resize_configuration($size);
 
 		$new_width = null;
 		if (isset($resize_info['width'])) {
@@ -188,7 +188,7 @@ class Picture extends File {
 	 * @param string $size
 	 */
 	public function show($size = 'original') {
-		if (!file_exists(Config::$tmp_dir . $size . '/' . $this->id)) {
+		if (!file_exists(Config::$tmp_dir . $size . '/' . $this->id) AND $size != 'original') {
 			$this->resize($size);
 		}
 
