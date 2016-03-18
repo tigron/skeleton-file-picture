@@ -236,6 +236,24 @@ class Picture extends File {
 	}
 
 	/**
+	 * Get cache size
+	 *
+	 * @access public
+	 * @return int $size
+	 */
+	public function get_cache_size() {
+		$size = 0;
+		foreach (Config::$resize_configurations as $name => $configuration) {
+			if (file_exists(Config::$tmp_dir . $name . '/' . $this->id)) {
+				$stat = stat(Config::$tmp_dir . $name . '/' . $this->id);
+				$file_size = $stat['blocks'] * 512;
+				$size += $file_size;
+			}
+		}
+		return $size;
+	}
+
+	/**
 	 * Get a picture by ID
 	 *
 	 * @access public
