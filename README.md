@@ -1,4 +1,4 @@
-# skeleton-file
+# skeleton-file-picture
 
 ## Description
 
