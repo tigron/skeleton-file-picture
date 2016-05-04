@@ -148,7 +148,7 @@ class Picture extends File {
 	 */
 	private function resize($size) {
 		if (Config::$tmp_dir === null) {
-			throw new \Exception('Set a path first in "Config::$tmp_path"');
+			throw new \Exception('Set a path first in "Config::$tmp_dir"');
 		}
 
 		if ($size == 'original') {
