@@ -19,7 +19,7 @@ class Picture extends File {
 	 * @var array $details
 	 * @access private
 	 */
-	private $local_details = [];
+	protected $local_details = [];
 
 	/**
 	 * Local fields
@@ -27,7 +27,7 @@ class Picture extends File {
 	 * @access private
 	 * @var array $fields
 	 */
-	private $local_fields = ['file_id', 'width', 'height'];
+	protected $local_fields = ['file_id', 'width', 'height'];
 
 	/**
 	 * Get the details of this file
@@ -253,14 +253,4 @@ class Picture extends File {
 		return $size;
 	}
 
-	/**
-	 * Get a picture by ID
-	 *
-	 * @access public
-	 * @param int $id
-	 * @return Picture $picture
-	 */
-	public static function get_by_id($id) {
-		return new Picture($id);
-	}
 }
