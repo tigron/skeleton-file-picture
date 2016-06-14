@@ -62,4 +62,11 @@ class Config {
 		}
 		return self::$resize_configurations[$name];
 	}
+
+	/**
+	 * Picture interface class
+	 *
+	 * This class will provide the Picture functionality, by default a class is defined
+	 */
+	public static $picture_interface = '\Skeleton\File\Picture\Picture';
 }
