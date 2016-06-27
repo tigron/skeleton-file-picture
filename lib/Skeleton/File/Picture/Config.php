@@ -36,14 +36,14 @@ class Config {
 	 *
 	 * @access public
 	 * @param string $name
-	 * @param int $height
 	 * @param int $width
+	 * @param int $height
 	 * @param string $mode
 	 */
-	public static function add_resize_configuration($name, $height, $width, $mode = 'auto') {
+	public static function add_resize_configuration($name, $width, $height, $mode = 'auto') {
 		$configuration = [
-			'height' => $height,
 			'width' => $width,
+			'height' => $height,
 			'mode' => $mode
 		];
 		self::$resize_configurations[$name] = $configuration;
