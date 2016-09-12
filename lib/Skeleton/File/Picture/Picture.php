@@ -182,6 +182,47 @@ class Picture extends File {
 	}
 
 	/**
+	* Convert an image to another type
+	*
+	* @access public
+	* @param string $format
+	*	Available formats: jpg, png, gif
+	*/
+	public function convert($type) {
+		$image = imagecreatefromstring(file_get_contents($this->get_path()));
+		$pathinfo = pathinfo($this->name);
+
+		// Make sure we have a filename
+		if (!isset($pathinfo['filename'])) {
+			$pathinfo['filename'] = $this->name;
+		}
+
+		switch ($type) {
+			case 'jpeg':
+			case 'jpg':
+				$this->name = $pathinfo['filename'] . '.jpg';
+				$this->mime_type = 'image/jpeg';
+				imagejpeg($image, $this->get_path());
+				break;
+			case 'png':
+				$this->name = $pathinfo['filename'] . '.jpg';
+				$this->mime_type = 'image/png';
+				imagepng($image, $this->get_path());
+				break;
+			case 'gif':
+				$this->name = $pathinfo['filename'] . '.jpg';
+				$this->mime_type = 'image/gif';
+				imagegif($image, $this->get_path());
+				break;
+			default:
+				throw new \Exception('Unsupported type "' . $type . '". Available types: jpg/png/gif');
+		}
+
+		$this->size = filesize($this->get_path());
+		$this->save();
+	}
+
+	/**
 	 * Output the picture to the browser
 	 *
 	 * @access public
