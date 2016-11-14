@@ -99,6 +99,26 @@ class Manipulation {
 				$img = false;
 		}
 
+		// Correct orientation if necessary
+		if ($this->mime_type == 'image/jpeg') {
+			$exif = exif_read_data($path);
+		    if (!empty($exif['Orientation'])) {
+		        switch ($exif['Orientation']) {
+		            case 3:
+		                $img = imagerotate($img, 180, 0);
+		                break;
+
+		            case 6:
+		                $img = imagerotate($img, -90, 0);
+		                break;
+
+		            case 8:
+		                $img = imagerotate($img, 90, 0);
+		                break;
+		        }
+			}
+		}
+
 		return $img;
 	}
 
