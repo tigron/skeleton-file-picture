@@ -101,8 +101,13 @@ class Manipulation {
 
 		// Correct orientation if necessary
 		if ($this->mime_type == 'image/jpeg') {
-			$exif = exif_read_data($path);
-		    if (!empty($exif['Orientation'])) {
+			try {
+				$exif = exif_read_data($path);
+			} catch (\Exception $e) {
+				return $img;
+			}	
+		    
+			if (!empty($exif['Orientation'])) {
 		        switch ($exif['Orientation']) {
 		            case 3:
 		                $img = imagerotate($img, 180, 0);
