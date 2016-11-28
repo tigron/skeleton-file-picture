@@ -102,7 +102,7 @@ class Manipulation {
 		// Correct orientation if necessary
 		if ($this->mime_type == 'image/jpeg') {
 			try {
-				$exif = exif_read_data($path);
+				$exif = @exif_read_data($path);
 			} catch (\Exception $e) {
 				return $img;
 			}	
