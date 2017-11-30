@@ -30,6 +30,13 @@ class Config {
 	public static $resize_configurations = [];
 
 	/**
+	 * Picture interface class
+	 *
+	 * This class will provide the Picture functionality, by default a class is defined
+	 */
+	public static $picture_interface = '\Skeleton\File\Picture\Picture';
+
+	/**
 	 * Add Resize Configuration
 	 *
 	 * Add a configuration for resizing pictures
@@ -64,9 +71,12 @@ class Config {
 	}
 
 	/**
-	 * Picture interface class
+	 * Set some PHP ini values
 	 *
-	 * This class will provide the Picture functionality, by default a class is defined
+	 * @access public
 	 */
-	public static $picture_interface = '\Skeleton\File\Picture\Picture';
+	public static function set_ini_values() {
+		// This will become the default setting from PHP 7.1 onwards
+		ini_set('gd.jpeg_ignore_warning', 1);
+	}
 }

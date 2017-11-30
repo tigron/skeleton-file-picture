@@ -59,6 +59,7 @@ class Manipulation {
 	 * @access public
 	 */
 	public function __construct($file) {
+		Config::set_ini_values();
 		$this->load($file);
 	}
 

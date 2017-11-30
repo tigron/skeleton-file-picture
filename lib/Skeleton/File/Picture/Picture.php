@@ -189,6 +189,8 @@ class Picture extends File {
 	*	Available formats: jpg, png, gif
 	*/
 	public function convert($type) {
+		Config::set_ini_values();
+
 		$image = imagecreatefromstring(file_get_contents($this->get_path()));
 		$pathinfo = pathinfo($this->name);
 
