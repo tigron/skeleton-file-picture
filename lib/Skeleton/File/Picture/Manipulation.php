@@ -105,8 +105,8 @@ class Manipulation {
 				$exif = @exif_read_data($path);
 			} catch (\Exception $e) {
 				return $img;
-			}	
-		    
+			}
+
 			if (!empty($exif['Orientation'])) {
 		        switch ($exif['Orientation']) {
 		            case 3:
