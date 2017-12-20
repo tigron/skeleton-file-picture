@@ -2,8 +2,8 @@
     "name": "tigron/skeleton-file-picture",
     "description": "Tigron File utilities",
     "type": "library",
-    "require-dev": {
-		"tigron/skeleton-file": "dev-master"
+    "require": {
+		"tigron/skeleton-file": "^0.2"
     },
     "license": "MIT",
     "authors": [
