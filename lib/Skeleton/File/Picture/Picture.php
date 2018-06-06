@@ -27,7 +27,7 @@ class Picture extends File {
 	 * @access private
 	 * @var array $fields
 	 */
-	protected $local_fields = ['file_id', 'width', 'height'];
+	protected $local_fields = ['file_id', 'width', 'height', 'crop_offset_left', 'crop_offset_top', 'crop_width', 'crop_height'];
 
 	/**
 	 * Get the details of this file
@@ -47,6 +47,30 @@ class Picture extends File {
 			$this->save();
 		} else {
 			$this->local_details = $details;
+		}
+	}
+
+	/**
+	 * Save crop information in the picture table
+	 *
+	 * @access public
+	 * @param upper left position on x axis
+	 * @param upper left position on y axis
+	 * @param width
+	 * @param height
+	 * @param save
+	 */
+	public function set_crop($x, $y, $w, $h, $save = true) {
+		$this->crop_offset_left = $x;
+		$this->crop_offset_top  = $y;
+		$this->crop_width  = $w;
+		$this->crop_height = $h;
+		if ($save) {
+			$this->save();
+		}
+		$filename = Config::$tmp_dir . 'cropped/' . $this->id;
+		if (file_exists($filename)) {
+			unlink($filename);
 		}
 	}
 
@@ -159,26 +183,32 @@ class Picture extends File {
 			mkdir(Config::$tmp_dir . $size . '/', 0755, true);
 		}
 
-		$resize_info = Config::get_resize_configuration($size);
+		if ($size != 'cropped') {
+			$resize_info = Config::get_resize_configuration($size);
 
-		$new_width = null;
-		if (isset($resize_info['width'])) {
-			$new_width = $resize_info['width'];
+			$new_width = null;
+			if (isset($resize_info['width'])) {
+				$new_width = $resize_info['width'];
+			}
+
+			$new_height = null;
+			if (isset($resize_info['height'])) {
+				$new_height = $resize_info['height'];
+			}
+
+			$mode = 'auto';
+			if (isset($resize_info['mode'])) {
+				$mode = $resize_info['mode'];
+			}
+
+			$image = new Manipulation($this);
+			$image->resize($new_width, $new_height, $mode);
+			$image->output(Config::$tmp_dir . $size . '/' . $this->id);
+		} else {
+			$image = new Manipulation($this);
+			$image->precise_crop();
+			$image->output(Config::$tmp_dir . $size . '/' . $this->id);
 		}
-
-		$new_height = null;
-		if (isset($resize_info['height'])) {
-			$new_height = $resize_info['height'];
-		}
-
-		$mode = 'auto';
-		if (isset($resize_info['mode'])) {
-			$mode = $resize_info['mode'];
-		}
-
-		$image = new Manipulation($this);
-		$image->resize($new_width, $new_height, $mode);
-		$image->output(Config::$tmp_dir . $size . '/' . $this->id);
 	}
 
 	/**

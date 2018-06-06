@@ -54,6 +54,17 @@ class Manipulation {
 	private $height;
 
 	/**
+	 * Crop information
+	 *
+	 * @access private
+	 * @var int
+	 */
+	private $crop_width;
+	private $crop_height;
+	private $crop_offset_left;
+	private $crop_offset_top;
+
+	/**
 	 * Constructor
 	 *
 	 * @access public
@@ -72,6 +83,10 @@ class Manipulation {
 	private function load(Picture $picture) {
 		$this->width = $picture->width;
 		$this->height = $picture->height;
+		$this->crop_width = $picture->crop_width;
+		$this->crop_height = $picture->crop_height;
+		$this->crop_offset_left = $picture->crop_offset_left;
+		$this->crop_offset_top = $picture->crop_offset_top;
 		$this->mime_type = $picture->mime_type;
 		$this->image = $this->open($picture->get_path());
 		if ($this->image === false) {
@@ -256,6 +271,18 @@ class Manipulation {
 		}
 
 		return getimagesize($this->path);
+	}
+
+	/**
+	 * Crop based on the dimensions saved in the picture table
+	 *
+	 * @access public
+	 */
+	public function precise_crop() {
+		if ($this->crop_width == 0 AND $this->crop_height == 0) {
+			throw new Exception('No crop information found for this picture');
+		}
+		$this->image_resized = imagecrop($this->image, [ 'x' => $this->crop_offset_left, 'y' => $this->crop_offset_top, 'width' => $this->crop_width, 'height' => $this->crop_height ]);
 	}
 
 	/**
