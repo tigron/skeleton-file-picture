@@ -280,7 +280,7 @@ class Manipulation {
 	 */
 	public function precise_crop() {
 		if ($this->crop_width == 0 AND $this->crop_height == 0) {
-			throw new Exception('No crop information found for this picture');
+			throw new \Exception('No crop information found for this picture');
 		}
 		$this->image_resized = imagecrop($this->image, [ 'x' => $this->crop_offset_left, 'y' => $this->crop_offset_top, 'width' => $this->crop_width, 'height' => $this->crop_height ]);
 	}
