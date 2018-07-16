@@ -4,7 +4,7 @@
  *
  * @author Lionel Laffineur <lionel@tigron.be>
  */
-namespace Skeleton\Transaction;
+namespace Skeleton\File\Picture;
 
 use \Skeleton\Database\Database;
 
