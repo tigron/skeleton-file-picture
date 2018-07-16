@@ -31,7 +31,7 @@ class Migration_20180101_010101_Crop extends \Skeleton\Database\Migration {
 					ADD `crop_width` INT(11) NOT NULL,
 					ADD `crop_height` INT(11) NOT NULL,
 					ADD `crop_offset_left` INT(11) NOT NULL,
-					ADD `crop_offset_right` INT(11) NOT NULL");
+					ADD `crop_offset_top` INT(11) NOT NULL");
 	}
 
 	/**
