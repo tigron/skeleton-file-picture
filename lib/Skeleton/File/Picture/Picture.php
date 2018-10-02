@@ -179,13 +179,20 @@ class Picture extends File {
 			throw new \Exception('Do not try to resize with size "original".');
 		}
 
+		/**
+		 * @TODO: redo the cropping implementation.
+		 * Precise cropping should be possible on any picture and resize_configuration
+		 * For now ignore fetching the configuration for size 'cropped'
+		 */
+		if ($size != 'cropped') {
+			$resize_info = Config::get_resize_configuration($size);
+		}
+
 		if (!file_exists(Config::$tmp_dir . $size . '/')) {
 			mkdir(Config::$tmp_dir . $size . '/', 0755, true);
 		}
 
 		if ($size != 'cropped') {
-			$resize_info = Config::get_resize_configuration($size);
-
 			$new_width = null;
 			if (isset($resize_info['width'])) {
 				$new_width = $resize_info['width'];
