@@ -3,7 +3,7 @@
     "description": "Tigron File utilities",
     "type": "library",
     "require": {
-		"tigron/skeleton-file": "^0.2"
+		"tigron/skeleton-file": "^0.3"
     },
     "license": "MIT",
     "authors": [
