@@ -21,7 +21,7 @@ class Migration_20180101_010101_Crop extends \Skeleton\Database\Migration {
 		// check if the columns for crop functionality are present
 		$columns = $db->get_all("SHOW COLUMNS FROM `picture`;");
 		foreach ($columns as $column) {
-			if ($column['field'] == 'crop_width' || $column['field'] == 'crop_height') {
+			if ($column['Field'] == 'crop_width' || $column['Field'] == 'crop_height') {
 				return;
 			}
 		}
