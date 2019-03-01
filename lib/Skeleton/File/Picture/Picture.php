@@ -299,6 +299,27 @@ class Picture extends File {
 	}
 
 	/**
+	 * Return the contents of a resized picture
+	 *
+	 * @access public
+	 * @param string $size
+	 * @return string $contents
+	 */
+	public function get_resized_contents($size) {
+		if (!file_exists(Config::$tmp_dir . $size . '/' . $this->id) AND $size != 'original') {
+			$this->resize($size);
+		}
+
+		if ($size == 'original') {
+			$filename = $this->get_path();
+		} else {
+			$filename = Config::$tmp_dir . $size . '/' . $this->id;
+		}
+
+		return file_get_contents($filename);
+	}
+
+	/**
 	 * Delete the image and its cache
 	 *
 	 * @access public
