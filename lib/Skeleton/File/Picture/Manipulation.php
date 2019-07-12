@@ -83,10 +83,18 @@ class Manipulation {
 	private function load(Picture $picture) {
 		$this->width = $picture->width;
 		$this->height = $picture->height;
-		$this->crop_width = $picture->crop_width;
-		$this->crop_height = $picture->crop_height;
-		$this->crop_offset_left = $picture->crop_offset_left;
-		$this->crop_offset_top = $picture->crop_offset_top;
+		if (isset($picture->crop_width)) {
+			$this->crop_width = $picture->crop_width;
+		}
+		if (isset($picture->crop_height)) {
+			$this->crop_height = $picture->crop_height;
+		}
+		if (isset($picture->crop_offset_left)) {
+			$this->crop_offset_left = $picture->crop_offset_left;
+		}
+		if (isset($picture->crop_offset_top)) {
+			$this->crop_offset_top = $picture->crop_offset_top;
+		}
 		$this->mime_type = $picture->mime_type;
 		$this->image = $this->open($picture->get_path());
 		if ($this->image === false) {
