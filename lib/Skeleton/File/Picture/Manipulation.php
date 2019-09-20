@@ -159,7 +159,7 @@ class Manipulation {
 	 * @param int $new_height (px)
 	 * @proportional bool $proportional
 	 */
-	public function output($destination = null, $quality = 100) {
+	public function output($destination = null, $quality = -1) {
 
 		switch ($this->mime_type) {
 			case 'image/jpeg':
