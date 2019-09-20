@@ -320,6 +320,17 @@ class Picture extends File {
 	}
 
 	/**
+	 * Return the code for showing a picture imbeded inline
+	 *
+	 * @access public
+	 * @param string $size
+	 * @return string
+	 */
+	public function get_embed($size = 'original') {
+		return sprintf("data:%s;base64,%s", $this->mime_type, base64_encode($this->get_resized_contents($size)));
+	}
+
+	/**
 	 * Delete the image and its cache
 	 *
 	 * @access public
