@@ -159,9 +159,15 @@ class Picture extends File {
 			return;
 		}
 		$path = $this->get_path();
-		list($width, $height) = getimagesize($path);
-		$this->width = $width;
-		$this->height = $height;
+		if ($this->mime_type == 'image/webp' && version_compare(PHP_VERSION, '7.1.0') < 0) {
+			$resource = imagecreatefromwebp($path);
+			$this->width = imagesx($resource);
+			$this->height = imagesy($resource);
+		} else {
+			list($width, $height) = getimagesize($path);
+			$this->width = $width;
+			$this->height = $height;
+		}
 	}
 
 	/**
@@ -252,6 +258,11 @@ class Picture extends File {
 				$this->name = $pathinfo['filename'] . '.jpg';
 				$this->mime_type = 'image/gif';
 				imagegif($image, $this->get_path());
+				break;
+			case 'webp':
+				$this->name = $pathinfo['filename'] . '.webp';
+				$this->mime_type = 'image/webp';
+				imagewebp($image, $this->get_path());
 				break;
 			default:
 				throw new \Exception('Unsupported type "' . $type . '". Available types: jpg/png/gif');
