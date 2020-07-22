@@ -175,10 +175,12 @@ class Manipulation {
 				$scale_quality = round(($quality/100) * 9);
 				$invert_scale_quality = 9 - $scale_quality;
 				imagepng($this->image_resized, $destination, $invert_scale_quality);
+				break;
 			case 'image/webp':
 				$scale_quality = round(($quality/100) * 9);
 				$invert_scale_quality = 9 - $scale_quality;
 				imagewebp($this->image_resized, $destination, $invert_scale_quality);
+				break;
 			default:
 				break;
 		}
