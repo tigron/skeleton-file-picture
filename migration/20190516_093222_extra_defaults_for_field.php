@@ -22,7 +22,7 @@ class Migration_20190516_093222_Extra_defaults_for_field extends \Skeleton\Datab
 					CHANGE `crop_height` `crop_height` int(11) NULL AFTER `crop_width`,
 					CHANGE `crop_offset_left` `crop_offset_left` int(11) NULL AFTER `crop_height`,
 					CHANGE `crop_offset_top` `crop_offset_top` int(11) NULL AFTER `crop_offset_left`;");
-		
+
 	}
 
 	/**

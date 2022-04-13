@@ -17,9 +17,20 @@ class Config {
 	 * This folder will be used to create a cache for resized pictures
 	 *
 	 * @access public
-	 * @var string $tmp_directory
+	 * @deprecated Use tmp_path instead
+	 * @var string $tmp_dir
 	 */
 	public static $tmp_dir = null;
+
+	/**
+	 * Tmp path
+	 *
+	 * This folder will be used to create a cache for resized pictures
+	 *
+	 * @access public
+	 * @var string $tmp_path
+	 */
+	public static $tmp_path = '/tmp';
 
 	/**
 	 * Resize configuration

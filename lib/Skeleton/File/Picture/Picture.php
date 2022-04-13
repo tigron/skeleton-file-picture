@@ -4,6 +4,7 @@
  *
  * @author Christophe Gosiau <christophe@tigron.be>
  * @author Gerry Demaret <gerry@tigron.be>
+ * @author David Vandemaele <david@tigron.be>
  */
 
 namespace Skeleton\File\Picture;
@@ -65,10 +66,16 @@ class Picture extends File {
 		$this->crop_offset_top  = $y;
 		$this->crop_width  = $w;
 		$this->crop_height = $h;
+
 		if ($save) {
 			$this->save();
 		}
-		$filename = Config::$tmp_dir . 'cropped/' . $this->id;
+
+		if (Config::$tmp_dir !== null) {
+			Config::$tmp_path = Config::$tmp_dir;
+		}
+
+		$filename = Config::$tmp_path . 'cropped/' . $this->id;
 		if (file_exists($filename)) {
 			unlink($filename);
 		}
@@ -177,8 +184,8 @@ class Picture extends File {
 	 * @param string $size
 	 */
 	private function resize($size) {
-		if (Config::$tmp_dir === null) {
-			throw new \Exception('Set a path first in "Config::$tmp_dir"');
+		if (Config::$tmp_dir !== null) {
+			Config::$tmp_path = Config::$tmp_dir;
 		}
 
 		if ($size == 'original') {
@@ -194,8 +201,8 @@ class Picture extends File {
 			$resize_info = Config::get_resize_configuration($size);
 		}
 
-		if (!file_exists(Config::$tmp_dir . $size . '/')) {
-			mkdir(Config::$tmp_dir . $size . '/', 0755, true);
+		if (!file_exists(Config::$tmp_path . $size . '/')) {
+			mkdir(Config::$tmp_path . $size . '/', 0755, true);
 		}
 
 		if ($size != 'cropped') {
@@ -216,11 +223,11 @@ class Picture extends File {
 
 			$image = new Manipulation($this);
 			$image->resize($new_width, $new_height, $mode);
-			$image->output(Config::$tmp_dir . $size . '/' . $this->id);
+			$image->output(Config::$tmp_path . $size . '/' . $this->id);
 		} else {
 			$image = new Manipulation($this);
 			$image->precise_crop();
-			$image->output(Config::$tmp_dir . $size . '/' . $this->id);
+			$image->output(Config::$tmp_path . $size . '/' . $this->id);
 		}
 	}
 
@@ -279,14 +286,18 @@ class Picture extends File {
 	 * @param string $size
 	 */
 	public function show($size = 'original') {
-		if (!file_exists(Config::$tmp_dir . $size . '/' . $this->id) AND $size != 'original') {
+		if (Config::$tmp_dir !== null) {
+			Config::$tmp_path = Config::$tmp_dir;
+		}
+
+		if (!file_exists(Config::$tmp_path . $size . '/' . $this->id) AND $size != 'original') {
 			$this->resize($size);
 		}
 
 		if ($size == 'original') {
 			$filename = $this->get_path();
 		} else {
-			$filename = Config::$tmp_dir . $size . '/' . $this->id;
+			$filename = Config::$tmp_path . $size . '/' . $this->id;
 		}
 
 		$gmt_mtime = gmdate('D, d M Y H:i:s', filemtime($filename)).' GMT';
@@ -317,14 +328,18 @@ class Picture extends File {
 	 * @return string $contents
 	 */
 	public function get_resized_contents($size) {
-		if (!file_exists(Config::$tmp_dir . $size . '/' . $this->id) AND $size != 'original') {
+		if (Config::$tmp_dir !== null) {
+			Config::$tmp_path = Config::$tmp_dir;
+		}
+
+		if (!file_exists(Config::$tmp_path . $size . '/' . $this->id) AND $size != 'original') {
 			$this->resize($size);
 		}
 
 		if ($size == 'original') {
 			$filename = $this->get_path();
 		} else {
-			$filename = Config::$tmp_dir . $size . '/' . $this->id;
+			$filename = Config::$tmp_path . $size . '/' . $this->id;
 		}
 
 		return file_get_contents($filename);
@@ -347,9 +362,13 @@ class Picture extends File {
 	 * @access public
 	 */
 	public function delete() {
+		if (Config::$tmp_dir !== null) {
+			Config::$tmp_path = Config::$tmp_dir;
+		}
+
 		foreach (Config::$resize_configurations as $name => $configuration) {
-			if (file_exists(Config::$tmp_dir . $name . '/' . $this->id)) {
-				unlink(Config::$tmp_dir . $name . '/' . $this->id);
+			if (file_exists(Config::$tmp_path . $name . '/' . $this->id)) {
+				unlink(Config::$tmp_path . $name . '/' . $this->id);
 			}
 		}
 		$db = Database::Get();
@@ -365,10 +384,14 @@ class Picture extends File {
 	 * @return int $size
 	 */
 	public function get_cache_size() {
+		if (Config::$tmp_dir !== null) {
+			Config::$tmp_path = Config::$tmp_dir;
+		}
+
 		$size = 0;
 		foreach (Config::$resize_configurations as $name => $configuration) {
-			if (file_exists(Config::$tmp_dir . $name . '/' . $this->id)) {
-				$stat = stat(Config::$tmp_dir . $name . '/' . $this->id);
+			if (file_exists(Config::$tmp_path . $name . '/' . $this->id)) {
+				$stat = stat(Config::$tmp_path . $name . '/' . $this->id);
 				$file_size = $stat['blocks'] * 512;
 				$size += $file_size;
 			}

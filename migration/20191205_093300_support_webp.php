@@ -22,7 +22,7 @@ class Migration_20191205_093300_Support_Webp extends \Skeleton\Database\Migratio
 		foreach ($ids as $id) {
 			$file = \File::get_by_id($id);
 			$file->save();
-		}		
+		}
 	}
 
 	/**

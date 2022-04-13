@@ -41,10 +41,12 @@ Initialize the picture library:
 	\Skeleton\File\Picture\Config::add_resize_configuration($name, $height, $width, $mode);
 
 	/**
-	 * Set the cache directory
+	 * Set the cache path
 	 * This is default set to the system TMP path
+     *
+     * \Skeleton\File\Picture\Config::$tmp_dir is deprecated
 	 */
-	\Skeleton\File\Picture\Config::$tmp_dir = $your_very_temporary_directory
+	\Skeleton\File\Picture\Config::$tmp_path = $your_very_temporary_path
 
 Show a resized picture:
 
