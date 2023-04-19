@@ -28,17 +28,18 @@ Check the \Skeleton\File README to initialize the File Store
 Initialize the picture library:
 
 	/**
-	 * This function adds a picture resize configuration
+	 * This function adds a picture configuration
 	 *
-	 * $name => A friendly name that can be reused later
-	 * $height => height in px
-	 * $width => width in px
-	 * $mode => exact/crop/auto
+	 * $params = [
+	 *	'width' => width in px,
+	 * 	'height' => height in px
+	 * 	'mode' => exact/crop/auto
 	 *		exact => The $height/$width will be used, ratio is ignored
 	 *		crop => The image is cropped in in order to fill the $height/$width frame
 	 *		auto => The image is resized to fit the $height/$width frame, ratio is kept
+	 *	'format' => image/jpeg|image/gif|image/png|image/webp|original
 	 */
-	\Skeleton\File\Picture\Config::add_resize_configuration($name, $height, $width, $mode);
+	\Skeleton\File\Picture\Config::add_configuration($params);
 
 	/**
 	 * Set the cache path
