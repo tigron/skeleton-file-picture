@@ -155,16 +155,23 @@ class Manipulation {
 	}
 
 	/**
-	 * Resize image
+	 * Output image to file
 	 *
 	 * @access public
-	 * @param int $new_width (px)
-	 * @param int $new_height (px)
-	 * @proportional bool $proportional
+	 * @param string $destination
+	 * @param string $format
+	 * @param int $quality
 	 */
-	public function output($destination = null, $quality = -1) {
+	public function output(string $destination = null, string $format = 'original', int $quality = -1) {
 
-		switch ($this->mime_type) {
+printf("%s", $format); die();
+		if ($format === 'original') {
+			$format = $this->mime_type;
+		}
+		if (in_array($format, [ 'original', 'image/jpeg', 'image/gif', 'image/png', 'image/webp', ]) === false) {
+			throw new \Exception('Unknown format ' . $format);
+		}
+		switch ($format) {
 			case 'image/jpeg':
 				imagejpeg($this->image_resized, $destination, $quality);
 				break;

@@ -59,22 +59,67 @@ class Config {
 	 * @param string $mode
 	 */
 	public static function add_resize_configuration($name, $width, $height, $mode = 'auto') {
-		$configuration = [
+		$params = [
+			'name' => $name,
 			'width' => $width,
 			'height' => $height,
 			'mode' => $mode
 		];
-		self::$resize_configurations[$name] = $configuration;
+		self::add_configuration($params);
 	}
 
 	/**
-	 * Get resize configuration
+	 * Add Configuration
+	 *
+	 * @access public
+	 * @param array $params
+	 * [ 'name' => 'config_name', 'width' => 'resize_width', 'height' => 'resize_height', ]
+	 */
+	public static function add_configuration($params) {
+		$configuration = [];
+
+		// checking name
+		if (isset($params['name']) === false) {
+			throw new \Exception("Parameter 'name' is missing");
+		}
+		$configuration['name'] = $params['name'];
+
+		// checking resize
+		if (isset($params['width']) === false && isset($params['height']) === false && isset($params['format']) === false) {
+			throw new \Exception("A resize of a conversion have to be configured");
+		}
+		if ((isset($params['width']) && isset($params['height']) === false) || (isset($params['width']) === false && isset($params['height']))) {
+			throw new \Exception("Parameters 'width' and 'height' are complementary");
+		}
+		if (isset($params['width']) && isset($params['height'])) {
+			$configuration['width'] = $params['width'];
+			$configuration['height'] = $params['height'];
+		}
+
+		// checking mode
+		if (isset($params['mode']) && in_array($params['mode'], [ 'auto', 'crop' ])) {
+			$configuration['mode'] = $params['mode'];
+		} else {
+			$configuration['mode'] = 'auto';
+		}
+
+		// checking format
+		if (isset($params['format']) && in_array($params['format'], [ 'image/jpg', 'image/jpeg', 'image/gif', 'image/png', 'image/webp', ])) {
+			$configuration['format'] = $params['format'];
+		}
+
+		// storing configuration
+		self::$resize_configurations[$configuration['name']] = $configuration;
+	}
+
+	/**
+	 * Get configuration
 	 *
 	 * @access public
 	 * @param string $name
 	 * @return array $configuration
 	 */
-	public static function get_resize_configuration($name) {
+	public static function get_configuration($name) {
 		if (!isset(self::$resize_configurations[$name])) {
 			throw new \Exception('Resize configuration ' . $name . ' not found');
 		}

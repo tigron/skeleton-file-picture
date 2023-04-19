@@ -184,9 +184,48 @@ class Picture extends File {
 	 * @param string $size
 	 */
 	private function resize($size) {
+		// for backwards compatibility
 		if (Config::$tmp_dir !== null) {
 			Config::$tmp_path = Config::$tmp_dir;
 		}
+
+		// create cache directory if it doesn't exist
+		if (file_exists(Config::$tmp_path . $size . '/') === false) {
+			mkdir(Config::$tmp_path . $size . '/', 0755, true);
+		}
+
+		// get configuration
+		$configuration = $resize_info = Config::get_configuration($size);
+		$format = 'original';
+		if (isset($configuration['format'])) {
+			$format = $configuration['format'];
+		}
+		$mode = 'auto';
+		if (isset($configuration['mode'])) {
+			$mode = $configuration['mode'];
+		}
+
+		// shall it be cropped ?
+		if (isset($configuration['crop']) && $configuration['crop'] === true) {
+			$image = new Manipulation($this);
+			$image->precise_crop();
+			$image->output(Config::$tmp_path . $size . '/' . $this->id, $format);
+			return;
+		}
+
+		// shall it be resized ?
+		if (isset($configuration['width'])) {
+			$image = new Manipulation($this);
+			$image->resize($configuration['width'], $configuration['height'], $mode);
+			$image->output(Config::$tmp_path . $size . '/' . $this->id, $format);
+			return;
+		}
+
+		// no resize and no crop, so only ouptut in another format
+		$image = new Manipulation($this);
+		$image->output(Config::$tmp_path . $size . '/' . $this->id, $format);
+		return;
+
 
 		if ($size == 'original') {
 			throw new \Exception('Do not try to resize with size "original".');
@@ -198,10 +237,10 @@ class Picture extends File {
 		 * For now ignore fetching the configuration for size 'cropped'
 		 */
 		if ($size != 'cropped') {
-			$resize_info = Config::get_resize_configuration($size);
+			$resize_info = Config::get_configuration($size);
 		}
 
-		if (!file_exists(Config::$tmp_path . $size . '/')) {
+		if (file_exists(Config::$tmp_path . $size . '/') === false) {
 			mkdir(Config::$tmp_path . $size . '/', 0755, true);
 		}
 
@@ -257,12 +296,12 @@ class Picture extends File {
 				imagejpeg($image, $this->get_path());
 				break;
 			case 'png':
-				$this->name = $pathinfo['filename'] . '.jpg';
+				$this->name = $pathinfo['filename'] . '.png';
 				$this->mime_type = 'image/png';
 				imagepng($image, $this->get_path());
 				break;
 			case 'gif':
-				$this->name = $pathinfo['filename'] . '.jpg';
+				$this->name = $pathinfo['filename'] . '.gif';
 				$this->mime_type = 'image/gif';
 				imagegif($image, $this->get_path());
 				break;
@@ -283,23 +322,37 @@ class Picture extends File {
 	 * Output the picture to the browser
 	 *
 	 * @access public
-	 * @param string $size
+	 * @param string $name
 	 */
-	public function show($size = 'original') {
+	public function show($name = null) {
+		// for backwards compatibility
 		if (Config::$tmp_dir !== null) {
 			Config::$tmp_path = Config::$tmp_dir;
 		}
 
-		if (!file_exists(Config::$tmp_path . $size . '/' . $this->id) AND $size != 'original') {
-			$this->resize($size);
+		// shall it be resized or cropped or converted
+		if ($name !== null && file_exists(Config::$tmp_path . $name . '/' . $this->id) === false) {
+			$this->resize($name);
 		}
 
-		if ($size == 'original') {
+		// getting configuration if needed
+		$configuration = null;
+		if ($name !== null) {
+			$configuration = Config::get_configuration($name);
+		}
+
+		// preparing for output
+		$mime_type = $this->mime_type;
+		if ($name === null) {
 			$filename = $this->get_path();
 		} else {
-			$filename = Config::$tmp_path . $size . '/' . $this->id;
+			$filename = Config::$tmp_path . $name . '/' . $this->id;
+			if (isset($configuration['format'])) {
+				$mime_type = $configuration['format'];
+			}
 		}
 
+		// generating output
 		$gmt_mtime = gmdate('D, d M Y H:i:s', filemtime($filename)).' GMT';
 
 		header('Cache-Control: public');
@@ -315,7 +368,7 @@ class Picture extends File {
 
 		header('Last-Modified: '. $gmt_mtime);
 		header('Expires: '.gmdate('D, d M Y H:i:s', strtotime('+300 minutes')).' GMT');
-		header('Content-Type: ' . $this->mime_type);
+		header('Content-Type: ' . $mime_type);
 		readfile($filename);
 		exit();
 	}
