@@ -164,7 +164,6 @@ class Manipulation {
 	 */
 	public function output(string $destination = null, string $format = 'original', int $quality = -1) {
 
-printf("%s", $format); die();
 		if ($format === 'original') {
 			$format = $this->mime_type;
 		}
