@@ -327,12 +327,12 @@ class Manipulation {
 
 		if ($this->mime_type == 'image/gif' OR $this->mime_type == 'image/png') {
 			$transparent_index = imagecolortransparent($this->image);
-			if ($transparent_index >= 0) { // GIF
+			if ($transparent_index >= 0) {
 				$rgba = imagecolorsforindex($this->image_resized, $transparent_index);
 				$transparent = imagecolorallocatealpha($this->image_resized, $rgba['red'], $rgba['green'], $rgba['blue'], 127);
 				imagefill($this->image_resized, 0, 0, $transparent);
 				imagecolortransparent($this->image_resized, $transparent);
-			} else { // PNG
+			} else {
 				imagealphablending($this->image_resized, false);
 				imagesavealpha($this->image_resized,true);
 				$transparent = imagecolorallocatealpha($this->image_resized, 255, 255, 255, 127);
