@@ -194,23 +194,23 @@ class Picture extends File {
 			mkdir(Config::$tmp_path . $size . '/', 0755, true);
 		}
 
+		// shall it be cropped ?
+		$format = 'original';
+		if ($size === 'crop' || $size === 'cropped') {
+			$image = new Manipulation($this);
+			$image->precise_crop();
+			$image->output(Config::$tmp_path . $size . '/' . $this->id, $format);
+			return;
+		}
+
 		// get configuration
 		$configuration = $resize_info = Config::get_configuration($size);
-		$format = 'original';
 		if (isset($configuration['format'])) {
 			$format = $configuration['format'];
 		}
 		$mode = 'auto';
 		if (isset($configuration['mode'])) {
 			$mode = $configuration['mode'];
-		}
-
-		// shall it be cropped ?
-		if (isset($configuration['crop']) && $configuration['crop'] === true) {
-			$image = new Manipulation($this);
-			$image->precise_crop();
-			$image->output(Config::$tmp_path . $size . '/' . $this->id, $format);
-			return;
 		}
 
 		// shall it be resized ?
@@ -337,7 +337,7 @@ class Picture extends File {
 
 		// getting configuration if needed
 		$configuration = null;
-		if ($name !== null) {
+		if ($name !== null && $name !== 'crop' && $name !== 'cropped') {
 			$configuration = Config::get_configuration($name);
 		}
 
