@@ -85,22 +85,22 @@ class Config {
 		$configuration['name'] = $params['name'];
 
 		// checking resize
-		if (isset($params['width']) === false && isset($params['height']) === false && isset($params['format']) === false) {
-			throw new \Exception("A resize of a conversion have to be configured");
-		}
-		if ((isset($params['width']) && isset($params['height']) === false) || (isset($params['width']) === false && isset($params['height']))) {
-			throw new \Exception("Parameters 'width' and 'height' are complementary");
-		}
-		if (isset($params['width']) && isset($params['height'])) {
+		if (isset($params['width'])) {
 			$configuration['width'] = $params['width'];
+		}
+		if (isset($params['height'])) {
 			$configuration['height'] = $params['height'];
 		}
 
 		// checking mode
-		if (isset($params['mode']) && in_array($params['mode'], [ 'auto', 'crop' ])) {
+		if (isset($params['mode'])) {
 			$configuration['mode'] = $params['mode'];
 		} else {
 			$configuration['mode'] = 'auto';
+		}
+
+		if (isset($params['crop'])) {
+			$configuration['crop'] = $params['crop'];
 		}
 
 		// checking format

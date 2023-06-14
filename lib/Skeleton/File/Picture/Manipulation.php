@@ -167,7 +167,7 @@ class Manipulation {
 		if ($format === 'original') {
 			$format = $this->mime_type;
 		}
-		if (in_array($format, [ 'original', 'image/jpeg', 'image/gif', 'image/png', 'image/webp', ]) === false) {
+		if (in_array($format, [ 'original', 'image/jpg', 'image/jpeg', 'image/gif', 'image/png', 'image/webp', ]) === false) {
 			throw new \Exception('Unknown format ' . $format);
 		}
 		switch ($format) {
@@ -188,9 +188,11 @@ class Manipulation {
 				imagewebp($this->image_resized, $destination, $invert_scale_quality);
 				break;
 			default:
+				throw new \Exception("Not support format");
 				break;
 		}
 
+		imagedestroy($this->image);
 		imagedestroy($this->image_resized);
 	}
 
@@ -306,6 +308,7 @@ class Manipulation {
 			throw new \Exception('No crop information found for this picture');
 		}
 		$this->image_resized = imagecrop($this->image, [ 'x' => $this->crop_offset_left, 'y' => $this->crop_offset_top, 'width' => $this->crop_width, 'height' => $this->crop_height ]);
+		imagecopy($this->image, $this->image_resized, 0, 0, 0, 0, $this->width, $this->height);
 	}
 
 	/**
@@ -321,7 +324,12 @@ class Manipulation {
 			throw new \Exception('specifiy output dimensions');
 		}
 
-		list($output_width, $output_height) = $this->get_output_dimensions($new_width, $new_height, $mode);
+		if ($mode === 'auto' || isset($this->crop_width) === false || empty($this->crop_width)) {
+			list($output_width, $output_height) = $this->get_output_dimensions($new_width, $new_height, $mode);
+		} else {
+			$output_width = $new_width;
+			$output_height = $new_height;
+		}
 
 		$this->image_resized = imagecreatetruecolor($output_width, $output_height);
 
@@ -340,10 +348,10 @@ class Manipulation {
 			}
 		}
 
-		imagecopyresampled($this->image_resized, $this->image, 0, 0, 0, 0, $output_width, $output_height, $this->width, $this->height);
-
-		if ($mode == 'crop') {
-			$this->crop($output_width, $output_height, $new_width, $new_height);
+		if (isset($this->crop_width) === false || empty($this->crop_width)) {
+			imagecopyresampled($this->image_resized, $this->image, 0, 0, 0, 0, $output_width, $output_height, $this->width, $this->height);
+		} else {
+			imagecopyresampled($this->image_resized, $this->image, 0, 0, 0, 0, $output_width, $output_height, $this->crop_width, $this->crop_height);
 		}
 	}
 

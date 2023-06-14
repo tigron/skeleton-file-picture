@@ -194,17 +194,9 @@ class Picture extends File {
 			mkdir(Config::$tmp_path . $size . '/', 0755, true);
 		}
 
-		// shall it be cropped ?
-		$format = 'original';
-		if ($size === 'crop' || $size === 'cropped') {
-			$image = new Manipulation($this);
-			$image->precise_crop();
-			$image->output(Config::$tmp_path . $size . '/' . $this->id, $format);
-			return;
-		}
-
 		// get configuration
 		$configuration = $resize_info = Config::get_configuration($size);
+		$format = 'original';
 		if (isset($configuration['format'])) {
 			$format = $configuration['format'];
 		}
@@ -212,110 +204,27 @@ class Picture extends File {
 		if (isset($configuration['mode'])) {
 			$mode = $configuration['mode'];
 		}
+		if (isset($configuration['crop']) && empty($configuration['crop']) === false) {
+			$mode = 'crop';
+		}
+
+		// ready to manipulate
+		$image = new Manipulation($this);
+
+		// shall it be cropped ?
+		if ($size === 'crop' || $size === 'cropped' || $mode === 'crop') {
+			if (empty($this->crop_width) === false && empty($this->crop_height)) {
+				$image->precise_crop();
+			}
+		}
 
 		// shall it be resized ?
 		if (isset($configuration['width'])) {
-			$image = new Manipulation($this);
 			$image->resize($configuration['width'], $configuration['height'], $mode);
-			$image->output(Config::$tmp_path . $size . '/' . $this->id, $format);
-			return;
 		}
 
-		// no resize and no crop, so only ouptut in another format
-		$image = new Manipulation($this);
 		$image->output(Config::$tmp_path . $size . '/' . $this->id, $format);
 		return;
-
-
-		if ($size == 'original') {
-			throw new \Exception('Do not try to resize with size "original".');
-		}
-
-		/**
-		 * @TODO: redo the cropping implementation.
-		 * Precise cropping should be possible on any picture and resize_configuration
-		 * For now ignore fetching the configuration for size 'cropped'
-		 */
-		if ($size != 'cropped') {
-			$resize_info = Config::get_configuration($size);
-		}
-
-		if (file_exists(Config::$tmp_path . $size . '/') === false) {
-			mkdir(Config::$tmp_path . $size . '/', 0755, true);
-		}
-
-		if ($size != 'cropped') {
-			$new_width = null;
-			if (isset($resize_info['width'])) {
-				$new_width = $resize_info['width'];
-			}
-
-			$new_height = null;
-			if (isset($resize_info['height'])) {
-				$new_height = $resize_info['height'];
-			}
-
-			$mode = 'auto';
-			if (isset($resize_info['mode'])) {
-				$mode = $resize_info['mode'];
-			}
-
-			$image = new Manipulation($this);
-			$image->resize($new_width, $new_height, $mode);
-			$image->output(Config::$tmp_path . $size . '/' . $this->id);
-		} else {
-			$image = new Manipulation($this);
-			$image->precise_crop();
-			$image->output(Config::$tmp_path . $size . '/' . $this->id);
-		}
-	}
-
-	/**
-	* Convert an image to another type
-	*
-	* @access public
-	* @param string $format
-	*	Available formats: jpg, png, gif
-	*/
-	public function convert($type) {
-		Config::set_ini_values();
-
-		$image = imagecreatefromstring(file_get_contents($this->get_path()));
-		$pathinfo = pathinfo($this->name);
-
-		// Make sure we have a filename
-		if (!isset($pathinfo['filename'])) {
-			$pathinfo['filename'] = $this->name;
-		}
-
-		switch ($type) {
-			case 'jpeg':
-			case 'jpg':
-				$this->name = $pathinfo['filename'] . '.jpg';
-				$this->mime_type = 'image/jpeg';
-				imagejpeg($image, $this->get_path());
-				break;
-			case 'png':
-				$this->name = $pathinfo['filename'] . '.png';
-				$this->mime_type = 'image/png';
-				imagepng($image, $this->get_path());
-				break;
-			case 'gif':
-				$this->name = $pathinfo['filename'] . '.gif';
-				$this->mime_type = 'image/gif';
-				imagegif($image, $this->get_path());
-				break;
-			case 'webp':
-				$this->name = $pathinfo['filename'] . '.webp';
-				$this->mime_type = 'image/webp';
-				imagewebp($image, $this->get_path());
-				break;
-			default:
-				throw new \Exception('Unsupported type "' . $type . '". Available types: jpg/png/gif');
-		}
-
-		$this->size = filesize($this->get_path());
-		$this->save();
 	}
 
 	/**
@@ -348,7 +257,7 @@ class Picture extends File {
 		} else {
 			$filename = Config::$tmp_path . $name . '/' . $this->id;
 			if (isset($configuration['format'])) {
-				$mime_type = $configuration['format'];
+				$mime_type = 'image/' . $configuration['format'];
 			}
 		}
 
@@ -368,7 +277,7 @@ class Picture extends File {
 
 		header('Last-Modified: '. $gmt_mtime);
 		header('Expires: '.gmdate('D, d M Y H:i:s', strtotime('+300 minutes')).' GMT');
-		header('Content-Type: ' . $mime_type);
+		header('Content-Type: ' . explode('/', $mime_type)[1]);
 		readfile($filename);
 		exit();
 	}
