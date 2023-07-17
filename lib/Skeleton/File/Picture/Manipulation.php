@@ -100,6 +100,7 @@ class Manipulation {
 		if ($this->image === false) {
 			throw new \Exception('Is not a valid picture');
 		}
+		$this->image_resized = $this->open($picture->get_path());
 	}
 
 	/**
