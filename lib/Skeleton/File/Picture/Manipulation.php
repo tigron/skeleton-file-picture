@@ -207,7 +207,7 @@ class Manipulation {
 	 * @param int $new_height (px)
 	 * @return array $output_dimensions
 	 */
-	private function get_output_dimensions($new_width = null, $new_height = null, $mode) {
+	private function get_output_dimensions($new_width = null, $new_height = null, $mode = 'auto') {
 		switch ($mode) {
 			case 'exact':
 				$output_width = $new_width;
