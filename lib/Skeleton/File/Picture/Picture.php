@@ -52,6 +52,25 @@ class Picture extends File {
 	}
 
 	/**
+	 * Validates the given input before insertion
+	 *
+	 * @access public
+	 * @param ?array<mixed> The array that will contain the errors encountered. Passed by reference.
+	 */
+	public function validate(&$errors = null) {
+		$this->get_dimensions();
+
+		// some image formats require less bytes per pixel, but we're taking 5
+		// as a safe maximum; libgd seems to use int32 as PHP_INT_MAX regardless
+		// of the platform
+		if (($this->width * $this->height * 5) > 2147483647) {
+			$errors['width'] = 'image dimensions not supported by libgd ';
+			$errors['height'] = 'image dimensions not supported by libgd ';
+			return false;
+		}
+	}
+
+	/**
 	 * Save crop information in the picture table
 	 *
 	 * @access public
@@ -165,7 +184,9 @@ class Picture extends File {
 		if (isset($this->width) AND isset($this->height)) {
 			return;
 		}
+
 		$path = $this->get_path();
+
 		if ($this->mime_type == 'image/webp' && version_compare(PHP_VERSION, '7.1.0') < 0) {
 			$resource = imagecreatefromwebp($path);
 			$this->width = imagesx($resource);
