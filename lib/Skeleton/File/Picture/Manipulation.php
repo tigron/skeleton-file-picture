@@ -278,8 +278,8 @@ class Manipulation {
 			$output_ratio = $width_ratio;
 		}
 
-		$output_height = $this->height / $output_ratio;
-		$output_width = $this->width / $output_ratio;
+		$output_height = round($this->height / $output_ratio);
+		$output_width = round($this->width / $output_ratio);
 
 		return [$output_width, $output_height];
 	}
