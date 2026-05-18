@@ -241,7 +241,7 @@ class Manipulation {
 			$new_height = round($new_width / $old_aspect_ratio);
 		}
 
-		$new_aspect_ratio = $new_width / $new_height;
+		$new_aspect_ratio = round($new_width / $new_height);
 
 		if ($new_width > $this->width AND $new_height > $this->height) {
 			$output_width = $this->width;
