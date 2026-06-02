@@ -163,7 +163,7 @@ class Manipulation {
 	 * @param string $format
 	 * @param int $quality
 	 */
-	public function output(string $destination = null, string $format = 'original', int $quality = -1) {
+	public function output(?string $destination = null, string $format = 'original', int $quality = -1) {
 
 		if ($format === 'original') {
 			$format = $this->mime_type;
@@ -207,7 +207,7 @@ class Manipulation {
 	 * @param int $new_height (px)
 	 * @return array $output_dimensions
 	 */
-	private function get_output_dimensions($new_width = null, $new_height = null, $mode = 'auto') {
+	private function get_output_dimensions(?$new_width = null, ?$new_height = null, $mode = 'auto') {
 		switch ($mode) {
 			case 'exact':
 				$output_width = $new_width;
@@ -320,7 +320,7 @@ class Manipulation {
 	 * @param int $new_height (px)
 	 * @proportional bool $proportional
 	 */
-	public function resize($new_width = null, $new_height = null, $mode = 'auto') {
+	public function resize(?$new_width = null, ?$new_height = null, $mode = 'auto') {
 		if (is_null($new_width) AND is_null($new_height)) {
 			throw new \Exception('specifiy output dimensions');
 		}
