@@ -80,7 +80,7 @@ class Manipulation {
 	 * @access private
 	 * @param Picture $picture
 	 */
-	private function load(Picture $picture) {
+	private function load(Picture $picture): void {
 		$this->width = $picture->width;
 		$this->height = $picture->height;
 		if (isset($picture->crop_width)) {
@@ -109,7 +109,7 @@ class Manipulation {
 	 * @access private
 	 * @return Resource $img
 	 */
-	private function open($path) {
+	private function open(string $path) {
 		switch ($this->mime_type) {
 			case 'image/jpeg':
 				$img = imagecreatefromjpeg($path);
@@ -163,14 +163,15 @@ class Manipulation {
 	 * @param string $format
 	 * @param int $quality
 	 */
-	public function output(?string $destination = null, string $format = 'original', int $quality = -1) {
-
+	public function output(?string $destination = null, string $format = 'original', int $quality = -1): void {
 		if ($format === 'original') {
 			$format = $this->mime_type;
 		}
+
 		if (in_array($format, [ 'original', 'image/jpg', 'image/jpeg', 'image/gif', 'image/png', 'image/webp', ]) === false) {
 			throw new \Exception('Unknown format ' . $format);
 		}
+		
 		switch ($format) {
 			case 'image/jpeg':
 				imagejpeg($this->image_resized, $destination, $quality);
@@ -201,13 +202,11 @@ class Manipulation {
 	 * Calculate output dimensions
 	 *
 	 * @access private
-	 * @param int $width (px)
-	 * @param int $height (px)
 	 * @param int $new_width (px)
 	 * @param int $new_height (px)
 	 * @return array $output_dimensions
 	 */
-	private function get_output_dimensions(?$new_width = null, ?$new_height = null, $mode = 'auto') {
+	private function get_output_dimensions(?int $new_width = null, ?int $new_height = null, string $mode = 'auto'): array {
 		switch ($mode) {
 			case 'exact':
 				$output_width = $new_width;
@@ -232,7 +231,7 @@ class Manipulation {
 	 * @param int $new_height
 	 * @return array $output_dimensions
 	 */
-	private function calculate_size($new_width, $new_height) {
+	private function calculate_size(int $new_width, int $new_height): array {
 		$old_aspect_ratio = $this->width / $this->height;
 
 		if (is_null($new_width)) {
@@ -268,7 +267,7 @@ class Manipulation {
 	 * @param int $new_height
 	 * @return array $output_dimensions
 	 */
-	private function calculate_crop_size($new_width, $new_height) {
+	private function calculate_crop_size(int $new_width, int $new_height): array {
 		$height_ratio = $this->height / $new_height;
 		$width_ratio = $this->width / $new_width;
 
@@ -288,10 +287,10 @@ class Manipulation {
 	 * Get dimensions
 	 *
 	 * @access public
-	 * @param mixed $path
+	 * @param string|null $path
 	 * @return array $dimensions
 	 */
-	public function get_dimensions($path = null) {
+	public function get_dimensions(?string $path = null): array {
 		if (!is_null($path)) {
 			$this->path = $path;
 		}
@@ -303,8 +302,9 @@ class Manipulation {
 	 * Crop based on the dimensions saved in the picture table
 	 *
 	 * @access public
+	 * @return void
 	 */
-	public function precise_crop() {
+	public function precise_crop(): void {
 		if ($this->crop_width == 0 AND $this->crop_height == 0) {
 			throw new \Exception('No crop information found for this picture');
 		}
@@ -318,9 +318,9 @@ class Manipulation {
 	 * @access public
 	 * @param int $new_width (px)
 	 * @param int $new_height (px)
-	 * @proportional bool $proportional
+	 * @param string $mode
 	 */
-	public function resize(?$new_width = null, ?$new_height = null, $mode = 'auto') {
+	public function resize(?int $new_width = null, ?int $new_height = null, string $mode = 'auto'): void {
 		if (is_null($new_width) AND is_null($new_height)) {
 			throw new \Exception('specifiy output dimensions');
 		}
@@ -364,8 +364,9 @@ class Manipulation {
 	 * @param int $output_height (px)
 	 * @param int $new_width (px)
 	 * @param int $new_height (px)
+	 * @return void
 	 */
-	private function crop($output_width, $output_height, $new_width, $new_height) {
+	private function crop(int $output_width, int $output_height, int $new_width, int $new_height): void {
 		$offset_x = ($output_width / 2) - ($new_width / 2);
 		$offset_y = ($output_height / 2) - ($new_height / 2);
 
