@@ -278,7 +278,7 @@ class Picture extends File {
 		} else {
 			$filename = Config::$tmp_path . $name . '/' . $this->id;
 			if (isset($configuration['format'])) {
-				$mime_type = 'image/' . $configuration['format'];
+				$mime_type = $configuration['format'];
 			}
 		}
 
@@ -298,7 +298,7 @@ class Picture extends File {
 
 		header('Last-Modified: '. $gmt_mtime);
 		header('Expires: '.gmdate('D, d M Y H:i:s', strtotime('+300 minutes')).' GMT');
-		header('Content-Type: ' . explode('/', $mime_type)[1]);
+		header('Content-Type: ' . $mime_type);
 		readfile($filename);
 		exit();
 	}
