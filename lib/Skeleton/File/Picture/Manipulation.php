@@ -65,13 +65,190 @@ class Manipulation {
 	private $crop_offset_top;
 
 	/**
+	 * The picture this manipulation works on
+	 *
+	 * @access private
+	 * @var Picture $picture
+	 */
+	private Picture $picture;
+
+	/**
 	 * Constructor
 	 *
 	 * @access public
+	 * @param Picture $picture
 	 */
-	public function __construct($file) {
+	public function __construct(Picture $picture) {
 		Config::set_ini_values();
-		$this->load($file);
+		$this->picture = $picture;
+		$this->load($picture);
+	}
+
+	/**
+	 * Resize the picture to a configured size and write it to the cache
+	 *
+	 * Applies the resize configuration with the given name: crops the
+	 * picture when the saved crop information or the configuration
+	 * requires it, resizes it to the configured dimensions and writes
+	 * it to the cache directory in the configured format
+	 *
+	 * @access public
+	 * @param string $size
+	 * @return void
+	 */
+	public function resize_to_configuration(string $size): void {
+		// for backwards compatibility
+		if (Config::$tmp_dir !== null) {
+			Config::$tmp_path = Config::$tmp_dir;
+		}
+
+		// create cache directory if it doesn't exist
+		if (file_exists(Config::$tmp_path . $size . '/') === false) {
+			mkdir(Config::$tmp_path . $size . '/', 0755, true);
+		}
+
+		// get configuration
+		$configuration = Config::get_configuration($size);
+		$format = 'original';
+		if (isset($configuration['format'])) {
+			$format = $configuration['format'];
+		}
+		$mode = 'auto';
+		if (isset($configuration['mode'])) {
+			$mode = $configuration['mode'];
+		}
+		if (isset($configuration['crop']) && empty($configuration['crop']) === false) {
+			$mode = 'crop';
+		}
+
+		// shall it be cropped ?
+		if ($size === 'crop' || $size === 'cropped' || $mode === 'crop') {
+			if (empty($this->crop_width) === false && empty($this->crop_height)) {
+				$this->precise_crop();
+			}
+		}
+
+		// shall it be resized ?
+		if (isset($configuration['width'])) {
+			$this->resize($configuration['width'], $configuration['height'] ?? null, $mode);
+		}
+
+		$this->output(Config::$tmp_path . $size . '/' . $this->picture->id, $format);
+	}
+
+	/**
+	 * Convert the picture to another format directly in the filestore
+	 *
+	 * Re-encodes the loaded picture in the given format and updates
+	 * the name, mime type and size of the picture accordingly
+	 *
+	 * @access public
+	 * @param string $type
+	 * 	Available types: jpg, png, gif, webp
+	 * @return void
+	 */
+	public function convert(string $type): void {
+		$mime_type = $this->get_mime_type_for_format($type);
+		$extensions = [
+			'image/jpeg' => 'jpg',
+			'image/gif' => 'gif',
+			'image/png' => 'png',
+			'image/webp' => 'webp',
+		];
+		$extension = $extensions[$mime_type];
+
+		$pathinfo = pathinfo($this->picture->name);
+
+		// Make sure we have a filename
+		if (isset($pathinfo['filename']) === false) {
+			$pathinfo['filename'] = $this->picture->name;
+		}
+
+		$this->picture->mime_type = $mime_type;
+		$this->picture->name = $pathinfo['filename'] . '.' . $extension;
+
+		$this->write($this->image, $this->picture->get_path(), $mime_type, -1);
+
+		$this->picture->size = filesize($this->picture->get_path());
+		$this->picture->save();
+
+		imagedestroy($this->image);
+		imagedestroy($this->image_resized);
+	}
+
+	/**
+	 * Output image to file
+	 *
+	 * @access public
+	 * @param string|null $destination
+	 * @param string $format
+	 * @param int $quality
+	 * @return void
+	 */
+	public function output(?string $destination = null, string $format = 'original', int $quality = -1): void {
+		$mime_type = $this->get_mime_type_for_format($format);
+		$this->write($this->image_resized, $destination, $mime_type, $quality);
+
+		imagedestroy($this->image);
+		imagedestroy($this->image_resized);
+	}
+
+	/**
+	 * Crop based on the dimensions saved in the picture table
+	 *
+	 * @access public
+	 * @return void
+	 */
+	public function precise_crop(): void {
+		if ($this->crop_width == 0 AND $this->crop_height == 0) {
+			throw new \Exception('No crop information found for this picture');
+		}
+		$this->image_resized = imagecrop($this->image, [ 'x' => $this->crop_offset_left, 'y' => $this->crop_offset_top, 'width' => $this->crop_width, 'height' => $this->crop_height ]);
+		imagecopy($this->image, $this->image_resized, 0, 0, 0, 0, $this->width, $this->height);
+	}
+
+	/**
+	 * Resize image
+	 *
+	 * @access public
+	 * @param int $new_width (px)
+	 * @param int $new_height (px)
+	 * @param string $mode
+	 */
+	public function resize(?int $new_width = null, ?int $new_height = null, string $mode = 'auto'): void {
+		if (is_null($new_width) AND is_null($new_height)) {
+			throw new \Exception('specifiy output dimensions');
+		}
+
+		if ($mode === 'auto' || isset($this->crop_width) === false || empty($this->crop_width)) {
+			list($output_width, $output_height) = $this->get_output_dimensions($new_width, $new_height, $mode);
+		} else {
+			$output_width = $new_width;
+			$output_height = $new_height;
+		}
+
+		$this->image_resized = imagecreatetruecolor($output_width, $output_height);
+
+		if ($this->mime_type == 'image/gif' OR $this->mime_type == 'image/png') {
+			$transparent_index = imagecolortransparent($this->image);
+			if ($transparent_index >= 0) {
+				$rgba = imagecolorsforindex($this->image_resized, $transparent_index);
+				$transparent = imagecolorallocatealpha($this->image_resized, $rgba['red'], $rgba['green'], $rgba['blue'], 127);
+				imagefill($this->image_resized, 0, 0, $transparent);
+				imagecolortransparent($this->image_resized, $transparent);
+			} else {
+				imagealphablending($this->image_resized, false);
+				imagesavealpha($this->image_resized,true);
+				$transparent = imagecolorallocatealpha($this->image_resized, 255, 255, 255, 127);
+				imagefilledrectangle($this->image_resized, 0, 0, $output_width, $output_height, $transparent);
+			}
+		}
+
+		if (isset($this->crop_width) === false || empty($this->crop_width)) {
+			imagecopyresampled($this->image_resized, $this->image, 0, 0, 0, 0, $output_width, $output_height, $this->width, $this->height);
+		} else {
+			imagecopyresampled($this->image_resized, $this->image, 0, 0, 0, 0, $output_width, $output_height, $this->crop_width, $this->crop_height);
+		}
 	}
 
 	/**
@@ -156,46 +333,66 @@ class Manipulation {
 	}
 
 	/**
-	 * Output image to file
+	 * Write an image to a destination in the given format
 	 *
-	 * @access public
-	 * @param string $destination
-	 * @param string $format
+	 * @access private
+	 * @param \GdImage $image
+	 * @param string|null $destination
+	 * @param string $mime_type
 	 * @param int $quality
+	 * @return void
 	 */
-	public function output(?string $destination = null, string $format = 'original', int $quality = -1): void {
-		if ($format === 'original') {
-			$format = $this->mime_type;
-		}
-
-		if (in_array($format, [ 'original', 'image/jpg', 'image/jpeg', 'image/gif', 'image/png', 'image/webp', ]) === false) {
-			throw new \Exception('Unknown format ' . $format);
-		}
-		
-		switch ($format) {
+	private function write($image, ?string $destination, string $mime_type, int $quality): void {
+		switch ($mime_type) {
 			case 'image/jpeg':
-				imagejpeg($this->image_resized, $destination, $quality);
+				imagejpeg($image, $destination, $quality);
 				break;
 			case 'image/gif':
-				imagegif($this->image_resized, $destination);
+				imagegif($image, $destination);
 				break;
 			case 'image/png':
-				$scale_quality = round(($quality/100) * 9);
+				$scale_quality = (int)round(($quality / 100) * 9);
 				$invert_scale_quality = 9 - $scale_quality;
-				imagepng($this->image_resized, $destination, $invert_scale_quality);
+				imagepng($image, $destination, $invert_scale_quality);
 				break;
 			case 'image/webp':
-				$scale_quality = round(($quality/100) * 9);
-				$invert_scale_quality = 9 - $scale_quality;
-				imagewebp($this->image_resized, $destination, $invert_scale_quality);
+				imagewebp($image, $destination, $quality);
 				break;
 			default:
-				throw new \Exception("Not support format");
-				break;
+				throw new \Exception('Unsupported format ' . $mime_type);
+		}
+	}
+
+	/**
+	 * Resolve the mime type for a given format
+	 *
+	 * Accepts 'original', the short type names (jpg, jpeg, png, gif,
+	 * webp) and mime types
+	 *
+	 * @access private
+	 * @param string $format
+	 * @return string $mime_type
+	 */
+	private function get_mime_type_for_format(string $format): string {
+		$supported_formats = [
+			'original' => $this->mime_type,
+			'jpg' => 'image/jpeg',
+			'jpeg' => 'image/jpeg',
+			'image/jpg' => 'image/jpeg',
+			'image/jpeg' => 'image/jpeg',
+			'gif' => 'image/gif',
+			'image/gif' => 'image/gif',
+			'png' => 'image/png',
+			'image/png' => 'image/png',
+			'webp' => 'image/webp',
+			'image/webp' => 'image/webp',
+		];
+
+		if (isset($supported_formats[$format]) === false) {
+			throw new \Exception('Unsupported format "' . $format . '". Available formats: jpg/jpeg/png/gif/webp');
 		}
 
-		imagedestroy($this->image);
-		imagedestroy($this->image_resized);
+		return $supported_formats[$format];
 	}
 
 	/**
@@ -281,79 +478,6 @@ class Manipulation {
 		$output_width = round($this->width / $output_ratio);
 
 		return [$output_width, $output_height];
-	}
-
-	/**
-	 * Get dimensions
-	 *
-	 * @access public
-	 * @param string|null $path
-	 * @return array $dimensions
-	 */
-	public function get_dimensions(?string $path = null): array {
-		if (!is_null($path)) {
-			$this->path = $path;
-		}
-
-		return getimagesize($this->path);
-	}
-
-	/**
-	 * Crop based on the dimensions saved in the picture table
-	 *
-	 * @access public
-	 * @return void
-	 */
-	public function precise_crop(): void {
-		if ($this->crop_width == 0 AND $this->crop_height == 0) {
-			throw new \Exception('No crop information found for this picture');
-		}
-		$this->image_resized = imagecrop($this->image, [ 'x' => $this->crop_offset_left, 'y' => $this->crop_offset_top, 'width' => $this->crop_width, 'height' => $this->crop_height ]);
-		imagecopy($this->image, $this->image_resized, 0, 0, 0, 0, $this->width, $this->height);
-	}
-
-	/**
-	 * Resize image
-	 *
-	 * @access public
-	 * @param int $new_width (px)
-	 * @param int $new_height (px)
-	 * @param string $mode
-	 */
-	public function resize(?int $new_width = null, ?int $new_height = null, string $mode = 'auto'): void {
-		if (is_null($new_width) AND is_null($new_height)) {
-			throw new \Exception('specifiy output dimensions');
-		}
-
-		if ($mode === 'auto' || isset($this->crop_width) === false || empty($this->crop_width)) {
-			list($output_width, $output_height) = $this->get_output_dimensions($new_width, $new_height, $mode);
-		} else {
-			$output_width = $new_width;
-			$output_height = $new_height;
-		}
-
-		$this->image_resized = imagecreatetruecolor($output_width, $output_height);
-
-		if ($this->mime_type == 'image/gif' OR $this->mime_type == 'image/png') {
-			$transparent_index = imagecolortransparent($this->image);
-			if ($transparent_index >= 0) {
-				$rgba = imagecolorsforindex($this->image_resized, $transparent_index);
-				$transparent = imagecolorallocatealpha($this->image_resized, $rgba['red'], $rgba['green'], $rgba['blue'], 127);
-				imagefill($this->image_resized, 0, 0, $transparent);
-				imagecolortransparent($this->image_resized, $transparent);
-			} else {
-				imagealphablending($this->image_resized, false);
-				imagesavealpha($this->image_resized,true);
-				$transparent = imagecolorallocatealpha($this->image_resized, 255, 255, 255, 127);
-				imagefilledrectangle($this->image_resized, 0, 0, $output_width, $output_height, $transparent);
-			}
-		}
-
-		if (isset($this->crop_width) === false || empty($this->crop_width)) {
-			imagecopyresampled($this->image_resized, $this->image, 0, 0, 0, 0, $output_width, $output_height, $this->width, $this->height);
-		} else {
-			imagecopyresampled($this->image_resized, $this->image, 0, 0, 0, 0, $output_width, $output_height, $this->crop_width, $this->crop_height);
-		}
 	}
 
 	/**
